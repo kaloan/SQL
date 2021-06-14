@@ -1,0 +1,107 @@
+SELECT * FROM MOVIESTAR
+SELECT * FROM MOVIEEXEC
+SELECT * FROM MOVIE
+
+SELECT DISTINCT m1.TITLE
+FROM MOVIE m1
+WHERE m1.YEAR < ANY (SELECT m2.year FROM MOVIE m2 WHERE m1.TITLE LIKE '%'+m2.TITLE+'%' OR m2.TITLE LIKE '%'+m1.TITLE+'%')
+
+SELECT a.NAME
+FROM MOVIESTAR a
+WHERE a.GENDER='F' AND  a.NAME IN (SELECT m.name FROM MOVIEEXEC m WHERE m.NETWORTH>10000000)
+
+SELECT a.NAME
+FROM MOVIESTAR a
+WHERE  a.NAME NOT IN (SELECT m.name FROM MOVIEEXEC m)
+
+SELECT m.TITLE
+FROM MOVIE m
+WHERE m.LENGTH > (SELECT g.LENGTH FROM MOVIE g WHERE g.TITLE='Gone With The Wind')
+
+SELECT * 
+FROM pc
+
+SELECT * 
+FROM product
+
+SELECT m.MAKER
+FROM product m
+WHERE m.type='PC' AND m.model IN (SELECT p.model FROM pc p WHERE p.speed>500)
+
+SELECT *
+FROM printer p 
+WHERE p.price >= ALL (SELECT PRICE FROM printer)
+
+SELECT * 
+FROM laptop l
+WHERE l.speed < ALL (SELECT p.speed FROM pc p)
+
+SELECT p.MODEL
+FROM product p
+WHERE p.MODEL IN 
+(SELECT p1.model FROM pc p1 WHERE p1.price>=ALL (SELECT t1.price FROM pc t1)
+UNION
+SELECT p2.model FROM printer p2 WHERE p2.price>=ALL (SELECT t2.price FROM printer t2)
+UNION
+SELECT p3.model FROM laptop p3 WHERE p3.price>=ALL (SELECT t3.price FROM laptop t3))
+
+
+
+SELECT DISTINCT ap.model
+FROM 
+(SELECT model,price FROM pc
+UNION
+SELECT model,price FROM laptop
+UNION
+SELECT model,price FROM printer
+) ap
+WHERE ap.price >= ALL
+(SELECT price FROM pc
+UNION
+SELECT price FROM laptop
+UNION
+SELECT price FROM printer
+)
+
+
+SELECT p.MAKER
+FROM product p
+WHERE p.type='Printer' AND p.model IN 
+(SELECT pr.model FROM printer pr WHERE pr.color='y' AND pr.price <= ALL 
+(SELECT price FROM printer WHERE color='y'))
+
+SELECT DISTINCT p.MAKER
+FROM product p
+JOIN pc c ON c.model=p.model AND p.type='PC'
+WHERE c.speed >= ALL (SELECT c2.speed FROM pc c2 WHERE c2.ram <= ALL (SELECT ram FROM pc))
+AND c.ram IN (SELECT c2.ram FROM pc c2 WHERE c2.ram <= ALL (SELECT ram FROM pc))
+
+SELECT *
+FROM product p
+JOIN pc c ON c.model=p.model AND p.type='PC'
+
+SELECT DISTINCT s.COUNTRY
+FROM CLASSES s
+WHERE s.NUMGUNS >= ALL (SELECT NUMGUNS FROM CLASSES)
+
+SELECT DISTINCT s.CLASS
+FROM SHIPS s
+WHERE s.NAME IN (SELECT bs.SHIP FROM OUTCOMES bs WHERE bs.RESULT='sunk')
+
+SELECT s.NAME
+FROM SHIPS s
+WHERE s.CLASS IN (SELECT b.CLASS FROM CLASSES b WHERE b.BORE=16)
+
+SELECT b.BATTLE
+FROM OUTCOMES b
+JOIN SHIPS s ON s.NAME=b.SHIP
+WHERE s.CLASS='Kongo'
+
+SELECT s.NAME
+FROM SHIPS s
+JOIN CLASSES c ON s.CLASS=c.CLASS
+WHERE c.NUMGUNS >= ALL (SELECT o.NUMGUNS FROM CLASSES o WHERE o.bore=c.bore)
+
+SELECT *
+FROM SHIPS s
+JOIN CLASSES c ON s.CLASS=c.CLASS
