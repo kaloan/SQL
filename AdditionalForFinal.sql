@@ -1,3 +1,85 @@
+--
+
+
+--11.07.2017
+SELECT studioname, title, year FROM movie m 
+WHERE year = (SELECT MAX(YEAR) FROM movie WHERE STUDIONAME = M.STUDIONAME)
+
+--NOT 100% SURE ON THIS ONE
+SELECT name, SUM(LENGTH)
+FROM movieexec 
+JOIN movie ON producerc# = cert#
+--WHERE EXISTS 
+WHERE CERT# IN 
+(SELECT ME2.CERT# 
+FROM movieexec ME2 
+JOIN movie M2 ON M2.producerc# = ME2.cert# 
+WHERE ME2.CERT# = CERT# AND M2.YEAR < 1980)
+GROUP BY NAME
+
+
+SELECT starname, title, name, networth
+FROM starsin 
+JOIN movie ON movietitle=title AND movieyear=year
+JOIN (SELECT cert#, networth, name
+FROM movieexec
+WHERE networth = (SELECT MAX(me.networth) FROM movieexec me) ) t ON PRODUCERC# = t.CERT#
+
+
+--TEST OPTION B
+
+
+--09.09.2017
+--DOES WHAT TASK1 IS SUPPOSED TO DO! THE LEFT JOIN ADDS A DUPLICATE
+--WHEN THERE IS A SHIP THAT ENGAGED IN MULTIPLE BATTLES
+--ERGO PROBLEM FORMULATION IS WRONG
+SELECT name, country
+FROM ships 
+--LEFT JOIN outcomes ON name = ship
+JOIN classes ON ships.class=classes.class
+WHERE name NOT IN 
+(SELECT s2.name
+FROM ships s2
+JOIN outcomes o2 ON s2.name = o2.ship
+WHERE o2.RESULT = 'sunk')
+
+
+SELECT *
+FROM ships 
+LEFT JOIN outcomes ON name = ship
+JOIN classes ON ships.class=classes.class
+
+SELECT name, country
+FROM ships
+LEFT JOIN outcomes ON name = ship
+JOIN classes ON ships.class=classes.class
+
+
+
+SELECT name, displacement, numguns
+FROM classes c 
+JOIN ships s ON s.class=c.class
+WHERE displacement = 
+(SELECT MIN(DISPLACEMENT)
+FROM classes) 
+AND numguns = 
+(SELECT MAX(numguns)
+FROM classes c1
+WHERE c1.displacement =  
+	(SELECT MIN(DISPLACEMENT)
+	FROM classes)
+)
+
+SELECT battle
+FROM outcomes o1
+WHERE o1.BATTLE NOT IN
+--WHERE NOT EXISTS
+(SELECT o2.battle FROM outcomes o2
+WHERE o2.BATTLE = o1.BATTLE AND o2.SHIP != o1.SHIP)
+
+--TEST OPTION B
+
+
 --13.07.2018
 SELECT ST.NAME, MIN(M.YEAR), MAX(M.YEAR), COUNT(*)
 FROM STUDIO ST
@@ -28,12 +110,20 @@ JOIN CLASSES C ON C.CLASS = S.CLASS
 GROUP BY O.BATTLE
 HAVING SUM(CASE WHEN C.TYPE = 'bb' THEN 1 ELSE 0 END) > SUM(CASE WHEN C.TYPE = 'bc' THEN 1 ELSE 0 END)
 
---09.07.2018
-SELECT ST.NAME, MIN(M.YEAR), MAX(M.YEAR), COUNT(*)
-FROM STUDIO ST
-JOIN MOVIE M ON M.STUDIONAME = ST.NAME
-WHERE ST.NAME LIKE 'M%'
-GROUP BY ST.NAME
+
+
+--09.07.2019
+--TEST OPTION C
+SELECT NAME
+FROM MOVIEEXEC
+WHERE NETWORTH = (SELECT TOP 1 ME2.NETWORTH FROM MOVIEEXEC ME2 ORDER BY ME2.NETWORTH ASC)
+
+
+--10.09.2019
+--TEST OPTION B
+SELECT TOP 1 NAME
+FROM MOVIESTAR
+ORDER BY BIRTHDATE DESC
 
 
 --05.08.2020
@@ -77,4 +167,8 @@ HAVING COUNT(*) <= 3
 SELECT * FROM MOVIESTAR
 SELECT * FROM STARSIN
 SELECT * FROM MOVIE
+SELECT * FROM MOVIEEXEC
 SELECT * FROM STUDIO
+
+
+SELECT * FROM OUTCOMES
